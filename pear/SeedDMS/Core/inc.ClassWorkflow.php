@@ -309,7 +309,7 @@ class SeedDMS_Core_Workflow { /* {{{ */
 		}
 
 		foreach($groups as $group) {
-			$queryStr = "INSERT INTO `tblWorkflowTransitionGroups` (`transition`, `groupid`, `minusers`) VALUES (".$transition->getID().", ".$group->getID().", 1)";
+			$queryStr = "INSERT INTO `tblWorkflowTransitionGroups` (`transition`, `groupid`, `minusers`) VALUES (".$transition->getID().", ".$group->getID().", ".$group->getNumOfUsers().")";
 			if (!$db->getResult($queryStr)) {
 				$db->rollbackTransaction();
 				return false;

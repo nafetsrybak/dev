@@ -239,6 +239,12 @@ class SeedDMS_Core_Group { /* {{{ */
 
 		if (!$res) return false;
 
+		$NumOfUsers = $this->getNumOfUsers();
+		$queryStr = "UPDATE `tblWorkflowTransitionGroups` SET `minusers` = ".$NumOfUsers." WHERE `groupid` = " . $this->getID();
+		$res = $db->getResult($queryStr);
+
+		if (!$res) return false;
+
 		unset($this->_users);
 		return true;
 	} /* }}} */
@@ -254,9 +260,28 @@ class SeedDMS_Core_Group { /* {{{ */
 		$res = $db->getResult($queryStr);
 
 		if (!$res) return false;
+
+		$NumOfUsers = $this->getNumOfUsers();
+		$queryStr = "UPDATE `tblWorkflowTransitionGroups` SET `minusers` = ".$NumOfUsers." WHERE `groupid` = " . $this->getID();
+		$res = $db->getResult($queryStr);
+		if (!$res) return false;
+
 		unset($this->_users);
 		return true;
 	} /* }}} */
+
+	/**
+	 * @return number of users
+	 */
+	function getNumOfUsers() {
+		$db = $this->_dms->getDB();
+		$queryStr = "SELECT `groupID` FROM `tblGroupMembers` WHERE `groupID` = " . $this->_id;
+		$resArr = $db->getResultArray($queryStr);
+		if (is_bool($resArr) && $resArr == false)
+			return false;
+		return count($resArr);
+	}
+
 
 	/**
 	 * Check if user is member of group
