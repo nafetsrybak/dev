@@ -715,6 +715,26 @@ class SeedDMS_View_ViewDocument extends SeedDMS_Bootstrap_Style {
 				print "</tbody>\n</table>\n";
 				$this->contentContainerEnd();
 			}
+			if($workflow){
+				$views = $latestContent->getViews();
+				$this->contentHeading(getMLText("views"));
+				echo "<div class='well' style='overflow-y: scroll; max-height: 400px;'>";
+				echo "<table id='sortbydate' class=\"table table-condensed\"><thead>";
+				echo "<th data-type='string' class='btn' style='width: 140px; text-align: center;'>".getMLText('date')."</th><th class='' data-type='string'>".getMLText('user')."</th><th data-type='string' class='btn'>".getMLText('view_status')."</th></tr>\n";
+				echo "</thead><tbody>";
+				$reviewed = getMLText('reviewed');
+				$not_reviewed = getMLText('not_reviewed');
+				foreach($views as $view) {
+				echo "<tr>";
+				echo "<td>".$view['date']."</td>";
+				echo "<td>".$view['name']."</td>";
+				if($view['status']){echo "<td>".$reviewed."</td>";} else {echo "<td>".$not_reviewed."</td>";}
+				echo "</tr>";
+				}
+				print "</tbody>\n</table>\n";
+				echo "</div>";
+				echo "<script src='../styles/bootstrap/views.js'></script>";
+			}
 		}
 ?>
 		</div>
@@ -1057,6 +1077,7 @@ class SeedDMS_View_ViewDocument extends SeedDMS_Bootstrap_Style {
 			foreach($transitions as $transition) {
 				echo "<td>";
 				if($latestContent->triggerWorkflowTransitionIsAllowed($user, $transition)) {
+					$latestContent->markUser($user);
 					$action = $transition->getAction();
 					print "<form action=\"../out/out.TriggerWorkflow.php\" method=\"post\">".createHiddenFieldWithKey('triggerworkflow')."<input type=\"hidden\" name=\"documentid\" value=\"".$documentid."\" /><input type=\"hidden\" name=\"version\" value=\"".$latestContent->getVersion()."\" /><input type=\"hidden\" name=\"transition\" value=\"".$transition->getID()."\" /><input type=\"submit\" class=\"btn\" value=\"".getMLText('action_'.strtolower($action->getName()), array(), $action->getName())."\" /></form>";
 					$allowedtransitions[] = $transition;

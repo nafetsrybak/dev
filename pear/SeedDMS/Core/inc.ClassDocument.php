@@ -1483,6 +1483,80 @@ class SeedDMS_Core_Document extends SeedDMS_Core_Object { /* {{{ */
 		if($workflow)
 			$content->setWorkflow($workflow, $user);
 
+		if($workflow){
+        	$queryStr = "SELECT `id` FROM `tblWorkflowTransitions` WHERE `workflow` = ".$workflow->getID();
+            if (!$trasitionids = $db->getResultArray($queryStr)) {
+                $db->rollbackTransaction();
+                return false;
+            }
+
+            $transitionStrAdd = '';
+            foreach($trasitionids as $element_id){
+                $transitionStrAdd .= $element_id['id'] . ",";
+            }
+            $queryStr = "SELECT `groupid` FROM `tblWorkflowTransitionGroups` WHERE `transition` IN (".substr($transitionStrAdd, 0, -1).")";
+            $groupids = $db->getResultArray($queryStr);
+            if ($groupids === FALSE) {
+                $db->rollbackTransaction();
+                return false;
+            }
+            $useridsArr = array();
+            if(!empty($groupids)){
+                $groupidsArr = array();
+                foreach($groupids as $element_id){
+                    $groupidsArr[] = $element_id['groupid'];
+                }
+                $groupidsArr = array_unique($groupidsArr);
+                $queryStrAdd = '';
+                foreach($groupidsArr as $element_id){
+                    $queryStrAdd .= $element_id . ",";
+                }
+                $queryStr = "SELECT `userID` FROM `tblGroupMembers` WHERE `groupID` IN (".substr($queryStrAdd, 0, -1).")";
+                if (!$userids = $db->getResultArray($queryStr)) {
+                    $db->rollbackTransaction();
+                    return false;
+                }
+				foreach($userids as $element_id){
+                    $useridsArr[] = $element_id['userID'];
+                }
+            }
+            $queryStr = "SELECT `userid` FROM `tblWorkflowTransitionUsers` WHERE `transition` IN (".substr($transitionStrAdd, 0, -1).")";
+            $userids = $db->getResultArray($queryStr);
+            if ($userids === FALSE) {
+                $db->rollbackTransaction();
+                return false;
+            }
+
+            $useridssingle = array();
+            if(!empty($userids)){
+                foreach($userids as $element_id){
+                    $useridssingle[] = $element_id['userid'];
+                }
+            }
+            $ALLUSERS = array_merge($useridssingle, $useridsArr);
+            $ALLUSERS = array_unique($ALLUSERS);
+            $queryStrAdd = '';
+            foreach ($ALLUSERS as $value) {
+                $queryStrAdd .= $value.",";
+            }
+            $queryStr = "SELECT `fullName`,`id` FROM `tblUsers` WHERE `id` IN (".substr($queryStrAdd, 0, -1).")";
+            $usernameids = $db->getResultArray($queryStr);
+            if ($usernameids === FALSE) {
+                $db->rollbackTransaction();
+                return false;
+            }
+
+            $queryStrAdd = '';
+            foreach ($usernameids as $value) {
+                $queryStrAdd .= "(".$contentID.",".$value['id'].", ".$db->qstr($value['fullName'])."),";
+            }
+            $queryStr = "INSERT INTO `tblViews` (`DocCon`, `userid`, `name`) VALUES ".substr($queryStrAdd, 0, -1)."";
+            if (!$userids = $db->getResult($queryStr)) {
+                $db->rollbackTransaction();
+                return false;
+            }
+        }
+
 		// Add reviewers into the database. Reviewers must review the document
 		// and submit comments, if appropriate. Reviewers can also recommend that
 		// a document be rejected.
@@ -2736,6 +2810,30 @@ class SeedDMS_Core_DocumentContent extends SeedDMS_Core_Object { /* {{{ */
 			$this->_user = $this->_document->_dms->getUser($this->_userID);
 		return $this->_user;
 	} /* }}} */
+
+	function markUser($user){
+		$db = $this->_document->_dms->getDB();
+		$queryStr = "SELECT `status` FROM `tblViews` WHERE `DocCon` = ".$this->getID()." AND `userid` = ".$user->getID();
+        $resArr = $db->getResultArray($queryStr);
+ 		if (is_bool($resArr) && $resArr == false)
+ 			return false;
+ 		if (!$resArr[0]['status']){
+			$queryStr = "UPDATE `tblViews` SET `status` = 1, `date` = CURRENT_TIMESTAMP WHERE `DocCon` = ".$this->getID()." AND `userid` = ".$user->getID();
+
+			$res = $db->getResult($queryStr);
+ 		}
+ 		if (is_bool($res) && $res == false)
+ 			return false;
+ 	}
+
+ 	function getViews(){
+        $db = $this->_document->_dms->getDB();
+        $queryStr = "SELECT `userid`, `name`, `status`, `date` FROM `tblViews` WHERE `DocCon` = ".$this->getID();
+        $resArr = $db->getResultArray($queryStr);
+        if (is_bool($resArr) && $resArr == false)
+            return false;
+        return $resArr;
+	}
 
 	function getPath() { return $this->_document->getDir() . $this->_version . $this->_fileType; }
 
