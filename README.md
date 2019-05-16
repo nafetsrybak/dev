@@ -8,7 +8,7 @@ What's new:
 2)  The ability to control user views of individual versions of documents was added.
 	When updating the document version, views belonging to the old one are not counted. The views are deleted along with the deletion of the document version.
 	
-	For that You need to create a database of tblViews with the columns id, DocCon, userid, name, status, date.
+	After copying the files for that You need to create a database of tblViews with the columns id, DocCon, userid, name, status, date.
 	id - int, AUTO_INCREMENT, PRIMARY
 	DocCon - int, Null-No, Default-No, make indexing by type INDEX
 	userid - int, Null-Yes, Default-Null, make indexing by type INDEX
