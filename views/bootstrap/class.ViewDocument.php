@@ -700,7 +700,7 @@ class SeedDMS_View_ViewDocument extends SeedDMS_Bootstrap_Style {
 			if($wkflogs) {
 				$this->contentHeading(getMLText("workflow_summary"));
 				$this->contentContainerStart();
-				echo "<table class=\"table table-condensed\"><thead>";
+				echo "<table id='results_t' class=\"table table-condensed\"><thead>";
 				echo "<th>".getMLText('date')."</th><th>".getMLText('action')."</th><th>".getMLText('user')."</th><th>".getMLText('comment')."</th></tr>\n";
 				echo "</thead><tbody>";
 				foreach($wkflogs as $wkflog) {
