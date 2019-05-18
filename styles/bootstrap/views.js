@@ -1,5 +1,9 @@
 var grid = document.getElementById('sortbydate');
+var tbody = grid.getElementsByTagName('tbody')[0];
+var results_t = document.getElementById('results_t');
+var results_b = results_t.getElementsByTagName('tbody')[0];
 var my_switch = false;
+
 grid.onclick = function(e) {
 	if (e.target.tagName != 'TH') return;
 	sortGrid(e.target.cellIndex, e.target.getAttribute('data-type'));
@@ -7,7 +11,6 @@ grid.onclick = function(e) {
 
 function viewcounter(){
 	var viewed = 0;
-	var tbody = grid.getElementsByTagName('tbody')[0];
 	var num_of_rows = tbody.childElementCount;
 	var rowsArray = [].slice.call(tbody.rows);
 	for(var i = 0; i < num_of_rows; i++){
@@ -16,10 +19,28 @@ function viewcounter(){
 		}
 	}
 	grid.parentElement.previousElementSibling.innerHTML += ': ' + viewed + '/' + num_of_rows;
+
+	var search_word;
+	var add;
+	find_bound = function(element, index, array){
+		if(element.cells[1].innerHTML == search_word){
+			element.cells[2].innerHTML += '<br>' + add;
+			element.cells[2].style.color = 'green';
+			return true;
+		}
+		return false;
+	}
+
+	var num_of_rows = results_b.childElementCount;
+	var resultsArray = [].slice.call(results_b.rows);
+	for(var i = 0; i < num_of_rows; i++){
+		search_word = resultsArray[i].cells[2].innerHTML;
+		add = resultsArray[i].cells[1].innerHTML;
+		rowsArray.find(find_bound);
+	}
 }
 
 function sortGrid(colNum, type) {
-	var tbody = grid.getElementsByTagName('tbody')[0];
 	var rowsArray = [].slice.call(tbody.rows);
 	var compare;
 	my_switch = !my_switch;
